@@ -1,0 +1,32 @@
+dist: xenial
+notifications:
+  slack:
+    on_success: never
+services:
+- postgresql
+branches:
+  only:
+  - master
+  - develop
+addons:
+  postgresql: '9.4'
+before_script:
+- psql -U postgres -c "create user decide password 'decide'"
+- psql -U postgres -c "create database test_decide owner decide"
+- psql -U postgres -c "ALTER USER decide CREATEDB"
+language: python
+python:
+- '3.6'
+install:
+- pip install -r requirements.txt
+- pip install codacy-coverage
+script:
+- cd decide
+- cp travis_local_settings.py local_settings.py
+- python ./manage.py test --keepdb
+deploy:
+  provider: heroku
+  app: decide-examen
+  strategy: git
+  api_key:
+    secure: 8f9615ac-1997-44c6-93d3-5e523902468c
